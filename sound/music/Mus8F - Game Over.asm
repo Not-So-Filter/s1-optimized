@@ -57,8 +57,9 @@ Mus8F_Game_Over_FM5:
 ; DAC Data
 Mus8F_Game_Over_DAC:
 	dc.b	$18
+
 Mus8F_Game_Over_DAC_Loop:
-	dc.b	dKick, $18
+        dc.b	dKick, $30
 	smpsLoop            $00, $04, Mus8F_Game_Over_DAC_Loop
 	smpsStop
 
