@@ -575,7 +575,7 @@ CycleSoundQueue:
 		clr.b	(a1)+			; Clear entry
 		subq.b	#bgm__First,d0		; Make it into 0-based index
 		blo.s	.nextinput		; If negative (i.e., it was $00), branch
-		andi.b	#$FF,d0			; Clear high byte and sign bit
+		andi.b	#$7F,d0			; Clear high byte and sign bit
 		move.b	(a0,d0.w),d2		; Get sound type
 		cmp.b	d3,d2			; Is it a lower priority sound?
 		blo.s	.nextinput		; Branch if yes
@@ -1392,8 +1392,8 @@ FMNoteOn:
 		btst	#2,TrackPlaybackControl(a5)	; Is track being overridden?
 		bne.s	locret_72714			; Return if so
 		moveq	#$28,d0				; Note on/off register
-		move.b	TrackVoiceControl(a5),d1	; Get channel bits
-		ori.b	#$F0,d1				; Note on on all operators
+		moveq	#signextendB($F0),d1		; Note on on all operators
+		or.b	TrackVoiceControl(a5),d1	; Get channel bits
 		bra.s	WriteFMI
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||
