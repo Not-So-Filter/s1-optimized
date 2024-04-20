@@ -281,8 +281,8 @@ FMSetFreq:
 		move.w	FMFrequencies(pc,d5.w),d6
 		swap	d5
 		andi.w	#7,d5
-		lsl.w	#8,d5
-		lsl.w	#3,d5
+		moveq	#11,d0
+		lsl.w	d0,d5
 		or.w	d5,d6
 		move.w	d6,TrackFreq(a5)	; Store new frequency
 	else
