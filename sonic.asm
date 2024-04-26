@@ -138,8 +138,8 @@ PortA_Ok:
 		lea	SetupValues(pc),a5	; Load setup values array address.
 		movem.w	(a5)+,d5-d7
 		movem.l	(a5)+,a0-a4
-		move.b	-$10FF(a1),d0	; get hardware version (from $A10001)
-		andi.b	#$F,d0
+		moveq	#$F,d0
+		and.b	-$10FF(a1),d0	; get hardware version (from $A10001)
 		beq.s	SkipSecurity	; If the console has no TMSS, skip the security stuff.
 		move.l	#'SEGA',$2F00(a1) ; move "SEGA" to TMSS register ($A14000)
 
@@ -2423,10 +2423,10 @@ Level_NoMusicFade:
 		lea	(a2,d0.w),a2
 		moveq	#0,d0
 		move.b	(a2),d0
-		beq.s	loc_37FC
+;		beq.s	loc_37FC
 		bsr.w	AddPLC		; load level patterns
 
-loc_37FC:
+;loc_37FC:
 		moveq	#plcid_Main2,d0
 		bsr.w	AddPLC		; load standard	patterns
 
@@ -5636,7 +5636,6 @@ BuildPriorityLoop:
 
 BuildObjectLoop:
 		movea.w	(a4)+,a0	; load object ID
-		andi.b	#$7F,obRender(a0)	; set as not visible
 		move.b	obRender(a0),d6
 		move.w	obX(a0),d0
 		move.w	obY(a0),d1
@@ -5726,48 +5725,16 @@ loc_1AE18:
 ; ---------------------------------------------------------------------------
 
 Build_1AE58:
-		btst	#2,d6		; is this to be positioned by screen coordinates?
-		bne.s	Build_1AEA2	; if it isn't, branch
-		move.w	obScreenY(a0),d1
-		moveq	#0,d2
-
-		; check if object is within X bounds
-		move.b	mainspr_width(a0),d2
-		subi.w	#128,d0
-		move.w	d0,d3
-		add.w	d2,d3
-		bmi.w	BuildSprites_NextObj
-		move.w	d0,d3
-		sub.w	d2,d3
-		cmpi.w	#320,d3
-		bge.w	BuildSprites_NextObj
-		addi.w	#128,d0
-
-		; check if object is within Y bounds
-		move.b	mainspr_height(a0),d2
-		subi.w	#128,d1
-		move.w	d1,d3
-		add.w	d2,d3
-		bmi.w	BuildSprites_NextObj
-		move.w	d1,d3
-		sub.w	d2,d3
-		cmpi.w	#224,d3
-		bge.w	BuildSprites_NextObj
-		addi.w	#128,d1
-		bra.w	Build_1AEE4
-; ---------------------------------------------------------------------------
-
-Build_1AEA2:
 		moveq	#0,d2
 		move.b	mainspr_width(a0),d2
 		sub.w	(a3),d0
 		move.w	d0,d3
 		add.w	d2,d3
-		bmi.w	BuildSprites_NextObj
+		bmi.s	BuildSprites_NextObj
 		move.w	d0,d3
 		sub.w	d2,d3
 		cmpi.w	#$140,d3
-		bge.w	BuildSprites_NextObj
+		bge.s	BuildSprites_NextObj
 		addi.w	#$80,d0
 		btst	#4,d6
 		beq.s	.assumeheight
@@ -5778,7 +5745,7 @@ Build_1AEA2:
 		add.w	d2,d2
 		addi.w	#$E0,d2
 		cmp.w	d2,d1
-		bhs.w	BuildSprites_NextObj
+		bhs.s	BuildSprites_NextObj
 		addi.w	#$80,d1
 		sub.w	d3,d1
 		bra.s	Build_1AEE4
@@ -5787,9 +5754,9 @@ Build_1AEA2:
 		sub.w	4(a3),d1
 		addi.w  #128,d1
 		cmpi.w	#-32+128,d1
-		blo.w	BuildSprites_NextObj
+		blo.s	BuildSprites_NextObj
 		cmpi.w	#32+128+224,d1
-		bhs.w	BuildSprites_NextObj
+		bhs.s	BuildSprites_NextObj
 
 Build_1AEE4:
 		ori.b	#$80,obRender(a0)

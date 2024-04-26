@@ -5,11 +5,10 @@
 WaterSurface:
 		moveq	#0,d0
 		move.b	obRoutine(a0),d0
-		move.w	Surf_Index(pc,d0.w),d1
-		jmp	Surf_Index(pc,d1.w)
+		jmp	Surf_Index(pc,d0.w)
 ; ===========================================================================
-Surf_Index:	dc.w Surf_Main-Surf_Index
-		dc.w Surf_Action-Surf_Index
+Surf_Index:	bra.s	Surf_Main
+		bra.s	Surf_Action
 
 surf_origX = objoff_30		; original x-axis position
 surf_freeze = objoff_32		; flag to freeze animation

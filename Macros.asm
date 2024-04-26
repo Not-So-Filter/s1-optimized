@@ -176,8 +176,8 @@ copyTilemap_end:	macro source,destination,width,height
 
 stopZ80:	macro
 		move.w	#$100,(z80_bus_request).l
-.wait:		btst	#0,(z80_bus_request).l
-		bne.s	.wait
+.wait:		tst.w	(z80_bus_request).l
+		beq.s	.wait
 		endm
 
 ; ---------------------------------------------------------------------------
