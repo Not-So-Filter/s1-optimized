@@ -46,7 +46,7 @@ Surf_Action:	; Routine 2
 .stopped:
 		tst.b	(f_pause).w	; is the game paused?
 		bne.s	.display	; if yes, branch
-		move.b	#0,surf_freeze(a0) ; resume animation
+		clr.b	surf_freeze(a0) ; resume animation
 		subq.b	#3,obFrame(a0)	; use normal frames
 
 .animate:
@@ -56,7 +56,7 @@ Surf_Action:	; Routine 2
 		addq.b	#1,obFrame(a0)
 		cmpi.b	#3,obFrame(a0)
 		blo.s	.display
-		move.b	#0,obFrame(a0)
+		clr.b	obFrame(a0)
 
 .display:
 		bra.w	DisplaySprite

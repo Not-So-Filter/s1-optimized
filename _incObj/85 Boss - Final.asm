@@ -38,22 +38,28 @@ BossFinal_ObjData:
 BossFinal_ObjData2:
 		dc.b 2,	0
                 dc.w 4*$80
-                dc.b $20, $19	; routine num, animation, sprite priority, width, height
+                dc.b $20, $19
+		even	; routine num, animation, sprite priority, width, height, padding
 		dc.b 4,	0
                 dc.w 1*$80
                 dc.b $12, 8
+		even
 		dc.b 6,	0
                 dc.w 3*$80
                 dc.b 0, 0
+		even
 		dc.b 8,	0
                 dc.w 3*$80
                 dc.b 0, 0
+		even
 		dc.b $A, 0
                 dc.w 3*$80
                 dc.b $20, $20
+		even
 		dc.b $C, 0
                 dc.w 3*$80
                 dc.b 0, 0
+		even
 ; ===========================================================================
 
 BossFinal_Main:	; Routine 0

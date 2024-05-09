@@ -130,12 +130,10 @@ loc_146CC:
 
 
 Sonic_Angle:
-		move.w	d0,d3
 		move.b	(v_anglebuffer2).w,d2
 		cmp.w	d0,d1
 		ble.s	loc_1475E
 		move.b	(v_anglebuffer).w,d2
-		move.w	d1,d3
 		move.w	d0,d1
 
 loc_1475E:

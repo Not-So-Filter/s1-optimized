@@ -57,7 +57,7 @@ Smash_Solid:	; Routine 2
 
 .smash:
 		move.w	obVelX(a1),obInertia(a1)
-		moveq	#7,d1		; load 8 fragments
+		moveq	#8-1,d1		; load 8 fragments
 		bra.s	SmashObject
 		
 .donothing:

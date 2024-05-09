@@ -3,7 +3,6 @@
 ; The source code to a similar version of the driver can be found here:
 ; https://hiddenpalace.org/News/Sega_of_Japan_Sound_Documents_and_Source_Code
 ; ---------------------------------------------------------------------------
-calcfmfreq:	= 0
 ; ---------------------------------------------------------------------------
 ; PSG instruments used in music
 ; ---------------------------------------------------------------------------
@@ -274,21 +273,8 @@ FMSetFreq:
 		beq.s	TrackSetRest
 		add.b	TrackTranspose(a5),d5	; Add track transposition
 		andi.w	#$7F,d5			; Clear high byte and sign bit
-	if calcfmfreq
-		divu.w	#12,d5
-		swap	d5
-		add.w	d5,d5
-		move.w	FMFrequencies(pc,d5.w),d6
-		swap	d5
-		andi.w	#7,d5
-		moveq	#11,d0
-		lsl.w	d0,d5
-		or.w	d5,d6
-		move.w	d6,TrackFreq(a5)	; Store new frequency
-	else
 		add.w	d5,d5
 		move.w	FMFrequencies(pc,d5.w),TrackFreq(a5)	; Store new frequency
-	endif
 		rts
 ; End of function FMSetFreq
 
@@ -322,7 +308,6 @@ TrackSetRest:
 ; word_72790: FM_Notes:
 FMFrequencies:
 		dc.w $025E,$0284,$02AB,$02D3,$02FE,$032D,$035C,$038F,$03C5,$03FF,$043C,$047C
-	if calcfmfreq=0
 		dc.w $0A5E,$0A84,$0AAB,$0AD3,$0AFE,$0B2D,$0B5C,$0B8F,$0BC5,$0BFF,$0C3C,$0C7C
 		dc.w $125E,$1284,$12AB,$12D3,$12FE,$132D,$135C,$138F,$13C5,$13FF,$143C,$147C
 		dc.w $1A5E,$1A84,$1AAB,$1AD3,$1AFE,$1B2D,$1B5C,$1B8F,$1BC5,$1BFF,$1C3C,$1C7C
@@ -330,7 +315,6 @@ FMFrequencies:
 		dc.w $2A5E,$2A84,$2AAB,$2AD3,$2AFE,$2B2D,$2B5C,$2B8F,$2BC5,$2BFF,$2C3C,$2C7C
 		dc.w $325E,$3284,$32AB,$32D3,$32FE,$332D,$335C,$338F,$33C5,$33FF,$343C,$347C
 		dc.w $3A5E,$3A84,$3AAB,$3AD3,$3AFE,$3B2D,$3B5C,$3B8F,$3BC5,$3BFF,$3C3C,$3C7C
-	endif
 		even
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||

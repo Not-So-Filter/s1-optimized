@@ -316,10 +316,11 @@ GameInit:
 		bsr.w	VDPSetupGame
 		bsr.w	DACDriverLoad
 		moveq	#$40,d0
+		lea	(z80_port_1_control+1).l,a0
 		stopZ80
-		move.b	d0,(z80_port_1_control+1).l	; init port 1 (joypad 1)
-		move.b	d0,(z80_port_2_control+1).l	; init port 2 (joypad 2)
-		move.b	d0,(z80_expansion_control+1).l	; init port 3 (expansion/extra)
+		move.b	d0,0(a0)	; init port 1 (joypad 1)
+		move.b	d0,2(a0)	; init port 2 (joypad 2)
+		move.b	d0,4(a0)	; init port 3 (expansion/extra)
 		startZ80
 		move.b	#id_Sega,(v_gamemode).w ; set Game Mode to Sega Screen
 
@@ -363,10 +364,12 @@ Art_Text_end:	even
 
 VBlank:
 		movem.l	d0-a6,-(sp)
+		lea	(vdp_data_port).l,a6
+		lea	4(a6),a5
 		tst.b	(v_vbla_routine).w
 		beq.s	VBla_00
-		move.l	#$40000010,(vdp_control_port).l
-		move.l	(v_scrposy_vdp).w,(vdp_data_port).l ; send screen y-axis pos. to VSRAM
+		move.l	#$40000010,(a5)
+		move.l	(v_scrposy_vdp).w,(a6) ; send screen y-axis pos. to VSRAM
 		moveq	#0,d0
 		move.b	(v_vbla_routine).w,d0
 		clr.b	(v_vbla_routine).w
@@ -395,8 +398,8 @@ ptr_VB_10:	dc.w	VBla_10
 ptr_VB_12:	dc.w	VBla_12
 ; ===========================================================================
 VBla_00:
-		cmpi.b	#$80+id_Level,(v_gamemode).w
-		beq.s	.islevel
+		tst.b	(v_gamemode).w
+		bpl.s	.islevel
 		cmpi.b	#id_Level,(v_gamemode).w ; is game on a level?
 		bne.s	VBla_Music	; if not, branch
 
@@ -459,8 +462,8 @@ VBla_06:
 .waterbelow:
 		move.w	(v_hbla_hreg).w,(a5)
 
-		writeVRAMsrcdefined	v_hscrolltablebuffer,$380,vram_hscroll
-		writeVRAMsrcdefined	v_spritetablebuffer,$280,vram_sprites
+		writeVRAM	v_hscrolltablebuffer,$380,vram_hscroll
+		writeVRAM	v_spritetablebuffer,$280,vram_sprites
 		bsr.w	ProcessDMAQueue
 		movem.l	(v_screenposx).w,d0-d7
 		movem.l	d0-d7,(v_screenposx_dup).w
@@ -496,8 +499,8 @@ Demo_Time:
 VBla_08:
 		bsr.w	ReadJoypads
 		writeCRAM	v_pal_dry,$80,0
-		writeVRAMsrcdefined	v_spritetablebuffer,$280,vram_sprites
-		writeVRAMsrcdefined	v_hscrolltablebuffer,$380,vram_hscroll
+		writeVRAM	v_spritetablebuffer,$280,vram_sprites
+		writeVRAM	v_hscrolltablebuffer,$380,vram_hscroll
 		bsr.w	PalCycle_SS
 		tst.w	(v_demolength).w	; is there time left on the demo?
 		beq.s	.end	; if not, return
@@ -520,8 +523,8 @@ VBla_0A:
 
 .waterbelow:
 		move.w	(v_hbla_hreg).w,(a5)
-		writeVRAMsrcdefined	v_hscrolltablebuffer,$380,vram_hscroll
-		writeVRAMsrcdefined	v_spritetablebuffer,$280,vram_sprites
+		writeVRAM	v_hscrolltablebuffer,$380,vram_hscroll
+		writeVRAM	v_spritetablebuffer,$280,vram_sprites
 		bsr.w	ProcessDMAQueue
 		movem.l	(v_screenposx).w,d0-d7
 		movem.l	d0-d7,(v_screenposx_dup).w
@@ -542,8 +545,8 @@ VBla_0E:
 VBla_12:
 		bsr.w	ReadJoypads
 		writeCRAM	v_pal_dry,$80,0
-		writeVRAMsrcdefined	v_spritetablebuffer,$280,vram_sprites
-		writeVRAMsrcdefined	v_hscrolltablebuffer,$380,vram_hscroll
+		writeVRAM	v_spritetablebuffer,$280,vram_sprites
+		writeVRAM	v_hscrolltablebuffer,$380,vram_hscroll
 		tst.w	(v_demolength).w
 		beq.s	.end
 		subq.w	#1,(v_demolength).w
@@ -565,8 +568,8 @@ sub_106E:
 		writeCRAM	v_pal_water,$80,0
 
 .waterbelow:
-		writeVRAMsrcdefined	v_spritetablebuffer,$280,vram_sprites
-		writeVRAMsrcdefined	v_hscrolltablebuffer,$380,vram_hscroll
+		writeVRAM	v_spritetablebuffer,$280,vram_sprites
+		writeVRAM	v_hscrolltablebuffer,$380,vram_hscroll
 		rts
 ; End of function sub_106E
 
@@ -582,15 +585,14 @@ HBlank:
 		tst.b	(f_hbla_pal).w	; is palette set to change?
 		beq.s	.nochg		; if not, branch
 		clr.b	(f_hbla_pal).w
-		move.l	a0,-(sp)
-		move.l	a1,-(sp)
+		movem.l	a0-a1,-(sp)
 		lea	(vdp_data_port).l,a1
 		lea	(v_pal_water).w,a0 ; get palette from RAM
 		move.l	#$C0000000,4(a1) ; set VDP to CRAM write
 	rept (v_pal_water-v_pal_water_dup)/4
 		move.l	(a0)+,(a1)	; move palette to CRAM
 	endm
-		move.w	#$8A00+223,4(a1) ; reset HBlank register
+		move.w	#$8A00+224-1,4(a1) ; reset HBlank register
 		movea.l	(sp)+,a0
 		movea.l	(sp)+,a1
 		tst.b	(f_doupdatesinhblank).w
@@ -653,7 +655,7 @@ VDPSetupGame:
 		dbf	d7,.setreg	; set the VDP registers
 
 		move.w	VDPSetupArray+2(pc),(v_vdp_buffer1).w
-		move.w	#$8A00+223,(v_hbla_hreg).w	; H-INT every 224th scanline
+		move.w	#$8A00+224-1,(v_hbla_hreg).w	; H-INT every 224th scanline
 		moveq	#0,d0
 		move.l	#$C0000000,(a0) ; set VDP to CRAM write
 		moveq	#($80/4)-1,d7
@@ -728,7 +730,7 @@ ClearScreen:
 		lea	(v_spritetablebuffer).w,a0
 		moveq	#0,d0
 		moveq	#1,d1
-		moveq	#$4F,d7
+		moveq	#$50-1,d7
 
 .loop:
 		move.w	d0,(a0)
@@ -1044,8 +1046,7 @@ Qplc_Loop:
 		ori.w	#$4000,d0
 		swap	d0
 		move.l	d0,(vdp_control_port).l ; converted VRAM address to VDP format
-		move.l	d1,-(sp)
-		move.l	a1,-(sp)
+		movem.l	d1/a1,-(sp)
 		bsr.w	NemDec		; decompress
 		move.l	(sp)+,d1
 		movea.l	(sp)+,a1
@@ -2413,9 +2414,11 @@ Level_NoMusicFade:
 		bsr.w	PaletteFadeOut
 		tst.w	(f_demo).w	; is an ending sequence demo running?
 		bmi.s	Level_ClrRam	; if yes, branch
+		disable_ints
 		locVRAM	ArtTile_Title_Card*$20
 		lea	(Nem_TitleCard).l,a0 ; load title card patterns
 		bsr.w	NemDec
+		enable_ints
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		lsl.w	#4,d0
@@ -2470,8 +2473,8 @@ Level_LoadPal:
 		enable_ints
 		moveq	#palid_Sonic,d0
 		bsr.w	PalLoad2	; load Sonic's palette
-		cmpi.b	#id_LZ,(v_zone).w ; is level LZ?
-		bne.s	Level_GetBgm	; if not, branch
+		tst.b	(f_water).w ; is level LZ?
+		beq.s	Level_GetBgm	; if not, branch
 
 		moveq	#palid_LZSonWater,d0 ; palette number $F (LZ)
 		cmpi.b	#3,(v_act).w	; is act number 3?
@@ -2604,8 +2607,8 @@ Level_Demo:
 		move.w	#510,(v_demolength).w
 
 Level_ChkWaterPal:
-		cmpi.b	#id_LZ,(v_zone).w ; is level LZ/SBZ3?
-		bne.s	Level_Delay	; if not, branch
+		tst.b	(f_water).w ; is level LZ/SBZ3?
+		beq.s	Level_Delay	; if not, branch
 		moveq	#palid_LZWater,d0 ; palette $B (LZ underwater)
 		cmpi.b	#3,(v_act).w	; is level SBZ3?
 		bne.s	Level_WtrNotSbz	; if not, branch
@@ -4026,7 +4029,7 @@ locret_69F2:
 ; sub_69F4:
 DrawBGScrollBlock2:
 		tst.b	(a2)
-		beq.s	locj_6DF2
+		beq.s	locret_69F2
 		cmpi.b	#id_SBZ,(v_zone).w
 		beq.s	Draw_SBz
 		bclr	#0,(a2)
@@ -4041,7 +4044,7 @@ DrawBGScrollBlock2:
 		bsr.w	DrawBlocks_TB_2
 locj_6DD2:
 		bclr	#1,(a2)
-		beq.s	locj_6DF2
+		beq.s	locret_69F2
 		; Draw new tiles on the right
 		move.w	#224/2,d4
 		move.w	#320,d5
@@ -4050,8 +4053,6 @@ locj_6DD2:
 		move.w	#320,d5
 		moveq	#3-1,d6
 		bra.w	DrawBlocks_TB_2
-locj_6DF2:
-		rts
 ;===============================================================================
 locj_6DF4:
 		dc.b $00,$00,$00,$00,$00,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$04
@@ -4077,8 +4078,7 @@ locj_6E28:
 		movea.w	(a3,d0.w),a3
 		beq.s	locj_6E5E
 		moveq	#-16,d5
-		move.l	d4,-(sp)
-		move.l	d5,-(sp)
+		movem.l	d4-d5,-(sp)
 		bsr.w	Calc_VRAM_Pos
 		move.l	(sp)+,d4
 		move.l	(sp)+,d5
@@ -4087,8 +4087,7 @@ locj_6E28:
 ;===============================================================================
 locj_6E5E:
 		moveq	#0,d5
-		move.l	d4,-(sp)
-		move.l	d5,-(sp)
+		movem.l	d4-d5,-(sp)
 		bsr.w	Calc_VRAM_Pos_2
 		move.l	(sp)+,d4
 		move.l	(sp)+,d5
@@ -4175,8 +4174,7 @@ locj_6F66:
 		movea.w	locj_6FE4(pc,d0.w),a3
 		beq.s	locj_6F9A
 		moveq	#-16,d5
-		move.l	d4,-(sp)
-		move.l	d5,-(sp)
+		movem.l	d4-d5,-(sp)
 		bsr.w	Calc_VRAM_Pos
 		move.l	(sp)+,d4
 		move.l	(sp)+,d5
@@ -4185,8 +4183,7 @@ locj_6F66:
 ;===============================================================================
 locj_6F9A:
 		moveq	#0,d5
-		move.l	d4,-(sp)
-		move.l	d5,-(sp)
+		movem.l	d4-d5,-(sp)
 		bsr.w	Calc_VRAM_Pos_2
 		move.l	(sp)+,d4
 		move.l	(sp)+,d5
@@ -4217,7 +4214,6 @@ locj_6FC8:
 ;===============================================================================
 locj_6FE4:
 		dc.w v_bgscreenposx_dup, v_bgscreenposx_dup, v_bg2screenposx_dup, v_bg3screenposx_dup
-		even
 locj_6FEC:
 		moveq	#((224+16+16)/16)-1,d6
 		move.l	#$800000,d7
@@ -4228,8 +4224,7 @@ locj_6FF4:
 		beq.s	locj_701C
 		movea.w	locj_6FE4(pc,d0.w),a3
 		movem.l	d4/d5/a0,-(sp)
-		move.l	d4,-(sp)
-		move.l	d5,-(sp)
+		movem.l	d4-d5,-(sp)
 		bsr.w	GetBlockData
 		move.l	(sp)+,d4
 		move.l	(sp)+,d5
@@ -4563,21 +4558,20 @@ locj_728C:
 ;-------------------------------------------------------------------------------
 locj_72B2:
 		dc.w v_bgscreenposx, v_bgscreenposx, v_bg2screenposx, v_bg3screenposx
-		even
 locj_72Ba:
 		lsr.w	#4,d0
 		move.b	(a0,d0.w),d0
 		movea.w	locj_72B2(pc,d0.w),a3
 		beq.s	locj_72da
 		moveq	#-16,d5
-		movem.l	d4/d5,-(sp)
+		movem.l	d4-d5,-(sp)
 		bsr.w	Calc_VRAM_Pos
 		move.l	(sp)+,d4
 		move.l	(sp)+,d5
 		bra.w	DrawBlocks_LR
 locj_72da:
 		moveq	#0,d5
-		movem.l	d4/d5,-(sp)
+		movem.l	d4-d5,-(sp)
 		bsr.w	Calc_VRAM_Pos_2
 		move.l	(sp)+,d4
 		move.l	(sp)+,d5
@@ -5636,6 +5630,7 @@ BuildPriorityLoop:
 
 BuildObjectLoop:
 		movea.w	(a4)+,a0	; load object ID
+		andi.b	#$7F,obRender(a0)
 		move.b	obRender(a0),d6
 		move.w	obX(a0),d0
 		move.w	obY(a0),d1
@@ -6208,8 +6203,8 @@ OPL_Main:
 		move.l	a1,(v_opl_data+$C).w
 		lea	(v_objstate).w,a2
 		move.w	#$101,(a2)+
-		moveq	#0,d1
 		moveq	#(v_objstate_end-v_objstate-2)/4-1,d0
+		moveq	#0,d1
 
 OPL_ClrList:
 		move.l	d1,(a2)+
@@ -7401,12 +7396,12 @@ loc_1B210:
 		lsl.w	#3,d0
 		lea	(a5,d0.w),a5
 		movea.l	(a5)+,a1
-		move.w	(a5)+,d1
-		add.w	d1,d1
-		adda.w	(a1,d1.w),a1
-		movea.w	(a5)+,a3
-		move.w	(a1)+,d1
-		subq.w	#1,d1
+		move.w	(a5)+,d4
+		add.w	d4,d4
+		adda.w	(a1,d4.w),a1
+		move.w	(a5)+,d5
+		move.w	(a1)+,d4
+		subq.w	#1,d4
 		bmi.s	loc_1B268
 		jsr	(BuildSpr_Normal).l
 
@@ -7417,16 +7412,6 @@ loc_1B268:
 		lea	$70(a0),a0
 		dbf	d7,loc_1B20C
 
-		move.w	d5,d6
-		bmi.s	.loc_1AE18
-		moveq	#0,d0
-
-.loc_1AE10:
-		move.w	d0,(a6)
-		addq.w	#8,a6
-		dbf	d5,.loc_1AE10
-
-.loc_1AE18:
 		subi.w	#$4F,d6
 		neg.w	d6
 		move.b	d6,(v_spritecount).w

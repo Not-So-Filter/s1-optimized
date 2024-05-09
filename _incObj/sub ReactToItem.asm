@@ -126,8 +126,8 @@ ReactToItem:
 
 ; obColType is $40-$7F (powerups)
 
-		move.b	obColType(a1),d0
-		andi.b	#$3F,d0
+		moveq	#$3F,d0
+		and.b	obColType(a1),d0
 		cmpi.b	#6,d0		; is collision type $46	?
 		beq.s	React_Monitor	; if yes, branch
 		cmpi.w	#90,flashtime(a0)	; is Sonic invincible?
@@ -349,8 +349,8 @@ KillSonic:
 
 
 React_Special:
-		move.b	obColType(a1),d1
-		andi.b	#$3F,d1
+		moveq	#$3F,d1
+		and.b	obColType(a1),d1
 		cmpi.b	#$B,d1		; is collision type $CB	?
 		beq.s	.caterkiller	; if yes, branch
 		cmpi.b	#$C,d1		; is collision type $CC	?

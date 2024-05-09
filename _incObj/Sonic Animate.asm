@@ -20,8 +20,8 @@ Sonic_Animate:
 		adda.w	(a1,d0.w),a1	; jump to appropriate animation	script
 		move.b	(a1),d0
 		bmi.s	.walkrunroll	; if animation is walk/run/roll/jump, branch
-		move.b	obStatus(a0),d1
-		andi.b	#1,d1
+		moveq	#1,d1
+		and.b	obStatus(a0),d1
 		andi.b	#$FC,obRender(a0)
 		or.b	d1,obRender(a0)
 		subq.b	#1,obTimeFrame(a0) ; subtract 1 from frame duration
@@ -76,8 +76,8 @@ Sonic_Animate:
 		bne.w	.rolljump	; if not, branch
 		moveq	#0,d1
 		move.b	obAngle(a0),d0	; get Sonic's angle
-		move.b	obStatus(a0),d2
-		andi.b	#1,d2		; is Sonic mirrored horizontally?
+		moveq	#1,d2		; is Sonic mirrored horizontally?
+		and.b	obStatus(a0),d2
 		bne.s	.flip		; if yes, branch
 		not.b	d0		; reverse angle
 
@@ -153,8 +153,8 @@ Sonic_Animate:
 		clr.w	d2
 		move.b	(sp)+,d2
 		move.b	d2,obTimeFrame(a0) ; modify frame duration
-		move.b	obStatus(a0),d1
-		andi.b	#1,d1
+		moveq	#1,d1
+		and.b	obStatus(a0),d1
 		andi.b	#$FC,obRender(a0)
 		or.b	d1,obRender(a0)
 		bra.w	.loadframe
@@ -174,8 +174,8 @@ Sonic_Animate:
 		lsr.w	#6,d2
 		move.b	d2,obTimeFrame(a0) ; modify frame duration
 		lea	SonAni_Push(pc),a1
-		move.b	obStatus(a0),d1
-		andi.b	#1,d1
+		moveq	#1,d1
+		and.b	obStatus(a0),d1
 		andi.b	#$FC,obRender(a0)
 		or.b	d1,obRender(a0)
 		bra.w	.loadframe
