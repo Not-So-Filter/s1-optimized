@@ -20,6 +20,38 @@ M_PSB_PSB:	spriteHeader
 M_PSB_PSB_End
 
 M_PSB_Limiter:	spriteHeader
+	if GenesisPlusGXWide
+	spritePiece	-$80-40, -$48, 4, 4, 0, 0, 0, 0, 0	; sprite line limiter
+	spritePiece	-$80-40, -$48, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$48, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$48, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$48, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$48, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$48, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$48, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$48, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$48, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$28, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$28, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$28, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$28, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$28, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$28, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$28, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$28, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$28, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -$28, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -8, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -8, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -8, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -8, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -8, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -8, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -8, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -8, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -8, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	-$80-40, -8, 4, 4, 0, 0, 0, 0, 0
+	else
 	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0	; sprite line limiter
 	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0
 	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0
@@ -50,6 +82,7 @@ M_PSB_Limiter:	spriteHeader
 	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
 	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
 	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
+	endif
 M_PSB_Limiter_End
 
 M_PSB_TM:	spriteHeader

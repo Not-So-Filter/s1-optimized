@@ -125,7 +125,11 @@ Obj11_Unload:
 		subi.w	#128,d1
 		andi.w	#$FF80,d1
 		sub.w	d1,d0		; approx distance between object and screen
-		cmpi.w	#$280,d0
+	if GenesisPlusGXWide=1
+		cmpi.w	#128+400+192,d0
+	else
+		cmpi.w	#128+320+192,d0
+	endif
 		bhi.s	+
 		rts
 ; ---------------------------------------------------------------------------

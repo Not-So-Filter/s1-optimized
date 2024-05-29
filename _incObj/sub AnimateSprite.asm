@@ -12,8 +12,9 @@ AnimateSprite:
 		beq.s	Anim_Run	; if not, branch
 
 		move.b	d0,obPrevAni(a0)
-		move.b	#0,obAniFrame(a0) ; reset animation
-		move.b	#0,obTimeFrame(a0) ; reset frame duration
+		moveq	#0,d2
+		move.b	d2,obAniFrame(a0) ; reset animation
+		move.b	d2,obTimeFrame(a0) ; reset frame duration
 
 Anim_Run:
 		subq.b	#1,obTimeFrame(a0) ; subtract 1 from frame duration
@@ -39,13 +40,13 @@ Anim_Next:
 		addq.b	#1,obAniFrame(a0) ; next frame number
 
 Anim_Wait:
-		rts	
+		rts
 ; ===========================================================================
 
 Anim_End_FF:
 		addq.b	#1,d0		; is the end flag = $FF	?
 		bne.s	Anim_End_FE	; if not, branch
-		move.b	#0,obAniFrame(a0) ; restart the animation
+		clr.b	obAniFrame(a0) ; restart the animation
 		move.b	1(a1),d0	; read sprite number
 		bra.s	Anim_Next
 ; ===========================================================================
@@ -73,8 +74,9 @@ Anim_End_FC:
 Anim_End_FB:
 		addq.b	#1,d0		; is the end flag = $FB	?
 		bne.s	Anim_End_FA	; if not, branch
-		move.b	#0,obAniFrame(a0) ; reset animation
-		clr.b	ob2ndRout(a0)	; reset	2nd routine counter
+		moveq	#0,d2
+		move.b	d2,obAniFrame(a0) ; reset animation
+		move.b	d2,ob2ndRout(a0)	; reset	2nd routine counter
 
 Anim_End_FA:
 		addq.b	#1,d0		; is the end flag = $FA	?

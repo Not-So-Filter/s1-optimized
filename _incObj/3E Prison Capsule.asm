@@ -24,22 +24,17 @@ Pri_Index:	dc.w Pri_Main-Pri_Index
 
 pri_origY = objoff_30		; original y-axis position
 
-Pri_Var:	dc.b 2,	$20
-		dc.w 4*$80
-		dc.b 0, 0
-		dc.w 0	; routine, width, priority, frame, padding
+Pri_Var:	dc.b 2,	$20	; routine, width, priority, frame, padding
+		dc.b 4, 0
+
 		dc.b 4,	$C
-		dc.w 5*$80
-		dc.b 1, 0
-		dc.w 0
+		dc.b 5, 1
+
 		dc.b 6,	$10
-		dc.w 4*$80
-		dc.b 3, 0
-		dc.w 0
+		dc.b 4, 3
+
 		dc.b 8,	$10
-		dc.w 3*$80
-		dc.b 5, 0
-		dc.w 0
+		dc.b 3, 5
 ; ===========================================================================
 
 Pri_Main:	; Routine 0
@@ -53,7 +48,11 @@ Pri_Main:	; Routine 0
 		lea	Pri_Var(pc,d0.w),a1
 		move.b	(a1)+,obRoutine(a0)
 		move.b	(a1)+,obActWid(a0)
-		move.w	(a1)+,obPriority(a0)
+		move.b	(a1)+,obPriority(a0)
+		move.w	obPriority(a0),d0
+		lsr.w	#1,d0
+		andi.w	#$380,d0
+		move.w	d0,obPriority(a0)
 		move.b	(a1)+,obFrame(a0)
 		cmpi.w	#8,d0		; is object type number	02?
 		bne.s	.not02		; if not, branch

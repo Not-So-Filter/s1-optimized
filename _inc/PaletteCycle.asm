@@ -12,9 +12,12 @@ PaletteCycle:
 		moveq	#0,d0
 		move.b	(v_zone).w,d0	; get level number
 		add.w	d0,d0
-		move.w	PalCycle_Index(pc,d0.w),d0
-		jmp	PalCycle_Index(pc,d0.w) ; jump to relevant palette routine
+;		move.w	PalCycle_Index(pc,d0.w),d0
+;		jmp	PalCycle_Index(pc,d0.w) ; jump to relevant palette routine
 		
+		movea.w	PalCycle_Index(pc,d0.w),a0
+		jmp	(a0) ; jump to relevant palette routine
+
 .ispaused:
 		rts
 ; End of function PaletteCycle
@@ -23,14 +26,14 @@ PaletteCycle:
 ; ---------------------------------------------------------------------------
 ; Palette cycling routines
 ; ---------------------------------------------------------------------------
-PalCycle_Index:	dc.w PalCycle_GHZ-PalCycle_Index
-		dc.w PalCycle_LZ-PalCycle_Index
-		dc.w PalCycle_MZ-PalCycle_Index
-		dc.w PalCycle_SLZ-PalCycle_Index
-		dc.w PalCycle_SYZ-PalCycle_Index
-		dc.w PalCycle_SBZ-PalCycle_Index
+PalCycle_Index:	dc.w PalCycle_GHZ
+		dc.w PalCycle_LZ
+		dc.w PalCycle_MZ
+		dc.w PalCycle_SLZ
+		dc.w PalCycle_SYZ
+		dc.w PalCycle_SBZ
 		zonewarning PalCycle_Index,2
-		dc.w PalCycle_GHZ-PalCycle_Index	; Ending
+		dc.w PalCycle_GHZ	; Ending
 
 
 ; ||||||||||||||| S U B	R O U T	I N E |||||||||||||||||||||||||||||||||||||||

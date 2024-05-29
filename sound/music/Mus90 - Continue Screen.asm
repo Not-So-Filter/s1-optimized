@@ -72,7 +72,7 @@ Mus90_Continue_Screen_Loop01:
 
 ; DAC Data
 Mus90_Continue_Screen_DAC:
-	dc.b	$30
+	dc.b	nRst, $30
 
 Mus90_Continue_Screen_Loop00:
 	dc.b	dKick, $0C, dSnare

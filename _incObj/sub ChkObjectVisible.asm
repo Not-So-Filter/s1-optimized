@@ -12,7 +12,11 @@ ChkObjectVisible:
 		move.w	obX(a0),d0	; get object x-position
 		sub.w	(v_screenposx).w,d0 ; subtract screen x-position
 		bmi.s	.offscreen
+	if GenesisPlusGXWide=1
+		cmpi.w	#400,d0		; is object on the screen?
+	else
 		cmpi.w	#320,d0		; is object on the screen?
+	endif
 		bge.s	.offscreen	; if not, branch
 
 		move.w	obY(a0),d1	; get object y-position
@@ -49,7 +53,11 @@ ChkPartiallyVisible:
 		bmi.s	.offscreen2
 		add.w	d1,d1
 		sub.w	d1,d0
-		cmpi.w	#320,d0
+	if GenesisPlusGXWide=1
+		cmpi.w	#400,d0		; is object on the screen?
+	else
+		cmpi.w	#320,d0		; is object on the screen?
+	endif
 		bge.s	.offscreen2
 
 		move.w	obY(a0),d1
@@ -59,9 +67,9 @@ ChkPartiallyVisible:
 		bge.s	.offscreen2
 
 		moveq	#0,d0
-		rts	
+		rts
 
 .offscreen2:
 		moveq	#1,d0
-		rts	
+		rts
 ; End of function ChkPartiallyVisible

@@ -152,12 +152,12 @@ Mus8B_Ending_Loop04:
 
 ; DAC Data
 Mus8B_Ending_DAC:
-	dc.b	dKick, $0C, dSnare, dKick, dSnare, dKick, $0C, dSnare, dKick, $06, $02
+	dc.b	dKick, $0C, dSnare, dKick, dSnare, dKick, $0C, dSnare, dKick, $06, nRst, $02
 	dc.b	dSnare, dSnare, dSnare, $09, dSnare, $03
 
 Mus8B_Ending_Loop00:
 	dc.b	dKick, $0C, dSnare, dKick, dSnare, dKick, $0C, dSnare, dKick, dSnare, dKick, $0C
-	dc.b	dSnare, dKick, dSnare, dKick, $0C, dSnare, dKick, $06, $02, dSnare, dSnare
+	dc.b	dSnare, dKick, dSnare, dKick, $0C, dSnare, dKick, $06, nRst, $02, dSnare, dSnare
 	dc.b	dSnare, $09, dSnare, $03
 	smpsLoop            $00, $03, Mus8B_Ending_Loop00
 	dc.b	dKick, $0C, dSnare, dKick, dSnare, dKick, $06, dSnare, $12, dSnare, $0C, dKick

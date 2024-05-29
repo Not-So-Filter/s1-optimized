@@ -104,6 +104,7 @@ v_endeggman	= v_objspace+object_size*2	; object variable space for Eggman after 
 v_tryagain	= v_objspace+object_size*3	; object variable space for the "TRY AGAIN" text ($40 bytes)
 v_eggmanchaos	= v_objspace+object_size*32	; object variable space for the emeralds juggled by Eggman ($180 bytes)
 
+	if SoundDriverType=1
 v_snddriver_ram:	ds.b	$5C0		; start of RAM for the sound driver data
 			ds.b	$40		; unused
 
@@ -141,6 +142,7 @@ v_speeduptempo:		= $029	; music - tempo modifier with speed shoes
 f_speedup:		= $02A	; flag indicating whether speed shoes tempo is on ($80) or off ($00)
 v_ring_speaker:		= $02B	; which speaker the "ring" sound is played in (00 = right; 01 = left)
 f_push_playing:		= $02C	; if set, prevents further push sounds from playing
+f_palupdatecount:	= $02D	; double update counter
 
 v_music_track_ram:	= $040	; Start of music RAM
 
@@ -186,6 +188,17 @@ v_1up_ram_copy:		= v_spcsfx_track_ram_end
 ; =================================================================================
 ; From here on, no longer relative to sound driver RAM
 ; =================================================================================
+	endif
+
+	if SoundDriverType=2
+			ds.b	$600		; unused
+	endif
+	if SoundDriverType=3
+			ds.b	$600		; unused
+	endif
+	if SoundDriverType=4
+v_snddriver_ram:	ds.b	$600		; start of RAM for the sound driver data
+	endif
 
 v_gamemode:		ds.b	1		; game mode (00=Sega; 04=Title; 08=Demo; 0C=Level; 10=SS; 14=Cont; 18=End; 1C=Credit; +8C=PreLevel)
 			ds.b	1		; unused
@@ -231,7 +244,7 @@ v_waterpos3:		ds.w	1		; water height, next target
 f_water:		ds.b	1		; flag set for water
 v_wtr_routine:		ds.b	1		; water event - routine counter
 f_wtr_state:		ds.b	1		; water palette state when water is above/below the screen (00 = partly/all dry; 01 = all underwater)
-f_doupdatesinhblank:	ds.b	1		; defers performing various tasks to the Horizontal Interrupt (H-Blank)
+f_smps_running:		ds.b	1		; defers performing various tasks to the Horizontal Interrupt (H-Blank)
 v_pal_buffer:		ds.b	$30		; palette data buffer (used for palette cycling)
 v_misc_variables_end:
 

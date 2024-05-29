@@ -445,7 +445,7 @@ Mus81_GHZ_Jump05:
 
 ; DAC Data
 Mus81_GHZ_DAC:
-	dc.b	$08, dKick, dSnare, dKick, dKick, dSnare, dSnare, dSnare
+	dc.b	nRst, $08, dKick, dSnare, dKick, dKick, dSnare, dSnare, dSnare
 
 Mus81_GHZ_Loop00:
 	dc.b	dKick, $10, dSnare, $08, dKick, $10, $08, dSnare, $10

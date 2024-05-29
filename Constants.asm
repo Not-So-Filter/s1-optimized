@@ -2,8 +2,37 @@
 ; Constants
 ; ---------------------------------------------------------------------------
 
+; ---------------------------------------------------------------------------
+; some variables and functions to help define those constants (redefined before a new set of IDs)
+offset :=	0		; this is the start of the pointer table
+ptrsize :=	1		; this is the size of a pointer (should be 1 if the ID is a multiple of the actual size)
+idstart :=	0		; value to add to all IDs
+
+; function using these variables
+id function ptr,((ptr-offset)/ptrsize+idstart)
+
+	if SoundDriverType=2
+; ---------------------------------------------------------------------------
+; size variables - you'll get an informational error if you need to change these...
+; they are all in units of bytes
+Size_of_DAC_samples =		$2F00
+Size_of_SEGA_sound =		$6174
+Size_of_DAC_driver_guess =	$F64 ; approximate post-compressed size of the Z80 sound driver
+
+MusID_Pause =		$7F			; FE
+MusID_Unpause =		$80			; FF
+	endif
+
+	if SoundDriverType=1
 Size_of_SegaPCM:		equ $6978
 Size_of_DAC_driver_guess:	equ $1760
+	endif
+
+	if SoundDriverType=3
+Size_of_Snd_driver_guess = $E00
+Size_of_Snd_driver2_guess = $690
+; Approximate size of compressed sound driver. Change when appropriate
+	endif
 
 ; VDP addressses
 vdp_data_port:		equ $C00000
@@ -14,9 +43,11 @@ psg_input:		equ $C00011
 
 ; Z80 addresses
 z80_ram:		equ $A00000	; start of Z80 RAM
+	if SoundDriverType=1
 z80_dac_timpani_pitch:	equ z80_ram+zTimpani_Pitch
 z80_dac_status:		equ z80_ram+zDAC_Status
 z80_dac_sample:		equ z80_ram+zDAC_Sample
+	endif
 z80_ram_end:		equ $A02000	; end of non-reserved Z80 RAM
 z80_version:		equ $A10001
 z80_port_1_data:	equ $A10002
@@ -34,6 +65,7 @@ sram_port:		equ $A130F1
 
 security_addr:		equ $A14000
 
+	if SoundDriverType=1
 ; Sound driver constants
 	phase 0
 TrackPlaybackControl:	ds.b 1		; All tracks
@@ -68,6 +100,7 @@ TrackGoSubStack:			; All tracks (multiple bytes. This constant won't get to be u
 TrackSz:
 	dephase
 	!org 0
+	endif
 
 ; VRAM data
 vram_fg:	equ $C000	; foreground namespace
@@ -244,6 +277,7 @@ afRoutine:	equ $FC	; increment routine counter
 afReset:	equ $FB	; reset animation and 2nd object routine counter
 af2ndRoutine:	equ $FA	; increment 2nd routine counter
 
+	if SoundDriverType=1
 ; Background music
 bgm__First:	equ $01
 bgm_GHZ:	equ ((ptr_mus81-MusicIndex)/4)+bgm__First
@@ -331,6 +365,199 @@ bgm_Speedup:	equ ((ptr_flgE2-Sound_ExIndex)/4)+flg__First
 bgm_Slowdown:	equ ((ptr_flgE3-Sound_ExIndex)/4)+flg__First
 bgm_Stop:	equ ((ptr_flgE4-Sound_ExIndex)/4)+flg__First
 flg__Last:	equ ((ptr_flgend-Sound_ExIndex-4)/4)+flg__First
+	endif
+
+	if SoundDriverType=2
+; Music IDs
+offset :=	zMasterPlaylist
+ptrsize :=	1
+idstart :=	$01
+; Background music
+bgm__First	= idstart
+bgm_GHZ		= id(zMusIDPtr_GHZ)
+bgm_LZ		= id(zMusIDPtr_LZ)
+bgm_MZ		= id(zMusIDPtr_MZ)
+bgm_SLZ		= id(zMusIDPtr_SLZ)
+bgm_SYZ		= id(zMusIDPtr_SYZ)
+bgm_SBZ		= id(zMusIDPtr_SBZ)
+bgm_Invincible	= id(zMusIDPtr_Invinc)
+bgm_ExtraLife	= id(zMusIDPtr_1UP)
+bgm_SS		= id(zMusIDPtr_SS)
+bgm_Title	= id(zMusIDPtr_Title)
+bgm_Ending	= id(zMusIDPtr_Ending)
+bgm_Boss	= id(zMusIDPtr_Boss)
+bgm_FZ		= id(zMusIDPtr_FZ)
+bgm_GotThrough	= id(zMusIDPtr_GotThrough)
+bgm_GameOver	= id(zMusIDPtr_GameOver)
+bgm_Continue	= id(zMusIDPtr_Continue)
+bgm_Credits	= id(zMusIDPtr_Credits)
+bgm_Drowning	= id(zMusIDPtr_Drowning)
+bgm_Emerald	= id(zMusIDPtr_Emerald)
+bgm__Last	= id(zMusIDPtr__End)
+
+; Sound IDs
+offset :=	SoundIndex
+ptrsize :=	2
+idstart :=	bgm__Last
+; Sound effects
+sfx__First	= idstart
+sfx_Jump	= id(ptr_sndA0)
+sfx_Lamppost	= id(ptr_sndA1)
+sfx_A2		= id(ptr_sndA2)
+sfx_Death	= id(ptr_sndA3)
+sfx_Skid	= id(ptr_sndA4)
+sfx_A5		= id(ptr_sndA5)
+sfx_HitSpikes	= id(ptr_sndA6)
+sfx_Push	= id(ptr_sndA7)
+sfx_SSGoal	= id(ptr_sndA8)
+sfx_SSItem	= id(ptr_sndA9)
+sfx_Splash	= id(ptr_sndAA)
+sfx_AB		= id(ptr_sndAB)
+sfx_HitBoss	= id(ptr_sndAC)
+sfx_Bubble	= id(ptr_sndAD)
+sfx_Fireball	= id(ptr_sndAE)
+sfx_Shield	= id(ptr_sndAF)
+sfx_Saw		= id(ptr_sndB0)
+sfx_Electric	= id(ptr_sndB1)
+sfx_Drown	= id(ptr_sndB2)
+sfx_Flamethrower	= id(ptr_sndB3)
+sfx_Bumper	= id(ptr_sndB4)
+sfx_Ring	= id(ptr_sndB5)
+sfx_SpikesMove	= id(ptr_sndB6)
+sfx_Rumbling	= id(ptr_sndB7)
+sfx_B8		= id(ptr_sndB8)
+sfx_Collapse	= id(ptr_sndB9)
+sfx_SSGlass	= id(ptr_sndBA)
+sfx_Door	= id(ptr_sndBB)
+sfx_Teleport	= id(ptr_sndBC)
+sfx_ChainStomp	= id(ptr_sndBD)
+sfx_Roll	= id(ptr_sndBE)
+sfx_Continue	= id(ptr_sndBF)
+sfx_Basaran	= id(ptr_sndC0)
+sfx_BreakItem	= id(ptr_sndC1)
+sfx_Warning	= id(ptr_sndC2)
+sfx_GiantRing	= id(ptr_sndC3)
+sfx_Bomb	= id(ptr_sndC4)
+sfx_Cash	= id(ptr_sndC5)
+sfx_RingLoss	= id(ptr_sndC6)
+sfx_ChainRise	= id(ptr_sndC7)
+sfx_Burning	= id(ptr_sndC8)
+sfx_Bonus	= id(ptr_sndC9)
+sfx_EnterSS	= id(ptr_sndCA)
+sfx_WallSmash	= id(ptr_sndCB)
+sfx_Spring	= id(ptr_sndCC)
+sfx_Switch	= id(ptr_sndCD)
+sfx_RingLeft	= id(ptr_sndCE)
+sfx_Signpost	= id(ptr_sndCF)
+sfx_Waterfall:	= id(ptr_sndD0)
+sfx__Last	= id(ptr_sndend)
+
+; Sound command IDs
+offset :=	zCommandIndex
+ptrsize :=	4
+idstart :=	sfx__Last
+flg__First	= idstart
+bgm_Fade	= id(CmdPtr_FadeOut)
+sfx_Sega	= id(CmdPtr_SegaSound)
+bgm_Speedup	= id(CmdPtr_SpeedUp)
+bgm_Slowdown	= id(CmdPtr_SlowDown)
+bgm_Stop	= id(CmdPtr_Stop)
+flg__Last	= id(CmdPtr__End)
+	endif
+
+	if SoundDriverType=3
+; Background music
+	phase $01
+bgm__First:	ds.b 0
+bgm_GHZ:	ds.b 1
+bgm_LZ:		ds.b 1
+bgm_MZ:		ds.b 1
+bgm_SLZ:	ds.b 1
+bgm_SYZ:	ds.b 1
+bgm_SBZ:	ds.b 1
+bgm_Invincible:	ds.b 1
+bgm_ExtraLife:	ds.b 1
+bgm_SS:		ds.b 1
+bgm_Title:	ds.b 1
+bgm_Ending:	ds.b 1
+bgm_Boss:	ds.b 1
+bgm_FZ:		ds.b 1
+bgm_GotThrough:	ds.b 1
+bgm_GameOver:	ds.b 1
+bgm_Continue:	ds.b 1
+bgm_Credits:	ds.b 1
+bgm_Drowning:	ds.b 1
+bgm_Emerald:	ds.b 1
+bgm__Last:	ds.b 1
+
+; Sound effects
+sfx__First:	ds.b 0
+sfx_Jump:	ds.b 1
+sfx_Lamppost:	ds.b 1
+sfx_A2:		ds.b 1
+sfx_Death:	ds.b 1
+sfx_Skid:	ds.b 1
+sfx_A5:		ds.b 1
+sfx_HitSpikes:	ds.b 1
+sfx_Push:	ds.b 1
+sfx_SSGoal:	ds.b 1
+sfx_SSItem:	ds.b 1
+sfx_Splash:	ds.b 1
+sfx_AB:		ds.b 1
+sfx_HitBoss:	ds.b 1
+sfx_Bubble:	ds.b 1
+sfx_Fireball:	ds.b 1
+sfx_Shield:	ds.b 1
+sfx_Saw:	ds.b 1
+sfx_Electric:	ds.b 1
+sfx_Drown:	ds.b 1
+sfx_Flamethrower:ds.b 1
+sfx_Bumper:	ds.b 1
+sfx_Ring:	ds.b 1
+sfx_SpikesMove:	ds.b 1
+sfx_Rumbling:	ds.b 1
+sfx_B8:		ds.b 1
+sfx_Collapse:	ds.b 1
+sfx_SSGlass:	ds.b 1
+sfx_Door:	ds.b 1
+sfx_Teleport:	ds.b 1
+sfx_ChainStomp:	ds.b 1
+sfx_Roll:	ds.b 1
+sfx_Continue:	ds.b 1
+sfx_Basaran:	ds.b 1
+sfx_BreakItem:	ds.b 1
+sfx_Warning:	ds.b 1
+sfx_GiantRing:	ds.b 1
+sfx_Bomb:	ds.b 1
+sfx_Cash:	ds.b 1
+sfx_RingLoss:	ds.b 1
+sfx_ChainRise:	ds.b 1
+sfx_Burning:	ds.b 1
+sfx_Bonus:	ds.b 1
+sfx_EnterSS:	ds.b 1
+sfx_WallSmash:	ds.b 1
+sfx_Spring:	ds.b 1
+sfx_Switch:	ds.b 1
+sfx_RingLeft:	ds.b 1
+sfx_Signpost:	ds.b 1
+sfx__Last:	ds.b 1
+
+; Special sound effects
+spec__First:	ds.b 0
+sfx_Waterfall:	ds.b 0
+spec__Last:	ds.b 1
+
+flg__First:	ds.b 0
+bgm_Fade:	ds.b 1
+sfx_Sega:	ds.b 1
+bgm_Speedup:	ds.b 1
+bgm_Slowdown:	ds.b 1
+bgm_Stop:	ds.b 1
+mus_StopSEGA:	ds.b 1
+flg__Last:	ds.b 1
+	dephase
+	!org 0
+	endif
 
 ; Sonic frame IDs
 fr_Null:	equ 0

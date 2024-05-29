@@ -9,8 +9,19 @@
 
 
 PlayMusic:
+	if SoundDriverType=1
 		move.b	d0,(v_snddriver_ram+v_soundqueue0).w
-		rts	
+	else
+		stopZ80
+	if SoundDriverType=2
+		move.b	d0,(z80_ram+zAbsVar.Queue0).l
+	endif
+	if SoundDriverType=3
+		move.b	d0,(z80_ram+zMusicNumber).l
+	endif
+		startZ80
+	endif
+		rts
 ; End of function PlaySound
 
 ; ---------------------------------------------------------------------------
@@ -21,8 +32,19 @@ PlayMusic:
 
 
 PlaySound:
+	if SoundDriverType=1
 		move.b	d0,(v_snddriver_ram+v_soundqueue1).w
-		rts	
+	else
+		stopZ80
+	if SoundDriverType=2
+		move.b	d0,(z80_ram+zAbsVar.Queue1).l
+	endif
+	if SoundDriverType=3
+		move.b	d0,(z80_ram+zSFXNumber0).l
+	endif
+		startZ80
+	endif
+		rts
 ; End of function PlaySound_Special
 
 ; ===========================================================================
@@ -31,5 +53,16 @@ PlaySound:
 ; ---------------------------------------------------------------------------
 
 PlaySound_Special:
+	if SoundDriverType=1
 		move.b	d0,(v_snddriver_ram+v_soundqueue2).w
-		rts	
+	else
+		stopZ80
+	if SoundDriverType=2
+		move.b	d0,(z80_ram+zAbsVar.Queue2).l
+	endif
+	if SoundDriverType=3
+		move.b	d0,(z80_ram+zSFXNumber1).l
+	endif
+		startZ80
+	endif
+		rts

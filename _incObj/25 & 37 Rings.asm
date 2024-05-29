@@ -188,6 +188,7 @@ RLoss_Count:	; Routine 0
 .belowmax:
 		subq.w	#1,d5
 		move.w	#$288,d4
+		moveq	#8,d6
 		bra.s	.makerings
 ; ===========================================================================
 
@@ -198,8 +199,8 @@ RLoss_Count:	; Routine 0
 .makerings:
 		move.b	#id_RingLoss,obID(a1) ; load bouncing ring object
 		addq.b	#2,obRoutine(a1)
-		move.b	#8,obHeight(a1)
-		move.b	#8,obWidth(a1)
+		move.b	d6,obHeight(a1)
+		move.b	d6,obWidth(a1)
 		move.w	obX(a0),obX(a1)
 		move.w	obY(a0),obY(a1)
 		move.l	#Map_Ring,obMap(a1)
@@ -207,7 +208,7 @@ RLoss_Count:	; Routine 0
 		move.b	#4,obRender(a1)
 		move.w	#3*$80,obPriority(a1)
 		move.b	#$47,obColType(a1)
-		move.b	#8,obActWid(a1)
+		move.b	d6,obActWid(a1)
 		st.b	(v_ani3_time).w
 		tst.w	d4
 		bmi.s	.loc_9D62

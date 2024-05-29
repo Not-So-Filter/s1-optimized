@@ -290,7 +290,7 @@ Mus84_SLZ_Jump06:
 
 ; DAC Data
 Mus84_SLZ_DAC:
-	dc.b	$30
+	dc.b	nRst, $30
 
 Mus84_SLZ_Jump00:
 	dc.b	dKick, $0C

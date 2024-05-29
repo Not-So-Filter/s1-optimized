@@ -27,10 +27,11 @@ ExItem_Main:	; Routine 2
 		move.w	#make_art_tile(ArtTile_Explosion,0,0),obGfx(a0)
 		move.b	#4,obRender(a0)
 		move.w	#1*$80,obPriority(a0)
-		move.b	#0,obColType(a0)
+		moveq	#0,d0
+		move.b	d0,obColType(a0)
 		move.b	#$C,obActWid(a0)
 		move.b	#7,obTimeFrame(a0) ; set frame duration to 7 frames
-		move.b	#0,obFrame(a0)
+		move.b	d0,obFrame(a0)
 		moveq	#sfx_BreakItem,d0
 		jsr	(PlaySound).w	; play breaking enemy sound
 
@@ -64,9 +65,10 @@ ExBom_Main:	; Routine 0
 		move.w	#make_art_tile(ArtTile_Explosion,0,0),obGfx(a0)
 		move.b	#4,obRender(a0)
 		move.w	#1*$80,obPriority(a0)
-		move.b	#0,obColType(a0)
+		moveq	#0,d0
+		move.b	d0,obColType(a0)
 		move.b	#$C,obActWid(a0)
 		move.b	#7,obTimeFrame(a0)
-		move.b	#0,obFrame(a0)
+		move.b	d0,obFrame(a0)
 		moveq	#sfx_Bomb,d0
 		jmp	(PlaySound).w	; play exploding bomb sound

@@ -29,8 +29,10 @@ EniDec:
 		adda.w	a3,a2		; store incremental copy word
 		movea.w	(a0)+,a4
 		adda.w	a3,a4		; store literal copy word
-		move.b	(a0)+,d5
-		asl.w	#8,d5
+;		move.b	(a0)+,d5
+;		asl.w	#8,d5
+		move.b	(a0)+,-(sp)	; get first byte of compressed data
+		move.w	(sp)+,d5
 		move.b	(a0)+,d5	; get first word in format list
 		moveq	#16,d6		; initial shift value
 ; loc_173E:
@@ -123,7 +125,7 @@ EniDec_Index:
 ; loc_17C4:
 EniDec_Done:
 		subq.w	#1,a0		; go back by one byte
-		cmpi.w	#16,d6		; were we going to start on a completely new byte?
+		cmpi.b	#16,d6		; were we going to start on a completely new byte?
 		bne.s	.notnewbyte	; if not, branch
 		subq.w	#1,a0		; and another one if needed
 ; loc_17CE:
@@ -149,7 +151,7 @@ EniDec_FetchInlineValue:
 		move.b	d4,d1		; copy PCCVH bitfield
 		add.b	d1,d1		; is the priority bit set?
 		bcc.s	.skippriority	; if not, branch
-		subq.w	#1,d6
+		subq.b	#1,d6
 		btst	d6,d5		; is the priority bit set in the inline render flags?
 		beq.s	.skippriority	; if not, branch
 		ori.w	#$8000,d3	; otherwise set priority bit in art tile
@@ -157,7 +159,7 @@ EniDec_FetchInlineValue:
 .skippriority:
 		add.b	d1,d1		; is the high palette line bit set?
 		bcc.s	.skiphighpal	; if not, branch
-		subq.w	#1,d6
+		subq.b	#1,d6
 		btst	d6,d5
 		beq.s	.skiphighpal
 		addi.w	#$4000,d3	; set second palette line bit
@@ -165,7 +167,7 @@ EniDec_FetchInlineValue:
 .skiphighpal:
 		add.b	d1,d1		; is the low palette line bit set?
 		bcc.s	.skiplowpal	; if not, branch
-		subq.w	#1,d6
+		subq.b	#1,d6
 		btst	d6,d5
 		beq.s	.skiplowpal
 		addi.w	#$2000,d3	; set first palette line bit
@@ -173,7 +175,7 @@ EniDec_FetchInlineValue:
 .skiplowpal:
 		add.b	d1,d1		; is the vertical flip flag set?
 		bcc.s	.skipyflip	; if not, branch
-		subq.w	#1,d6
+		subq.b	#1,d6
 		btst	d6,d5
 		beq.s	.skipyflip
 		ori.w	#$1000,d3	; set Y-flip bit
@@ -181,18 +183,18 @@ EniDec_FetchInlineValue:
 .skipyflip:
 		add.b	d1,d1		; is the horizontal flip flag set?
 		bcc.s	.skipxflip	; if not, branch
-		subq.w	#1,d6
+		subq.b	#1,d6
 		btst	d6,d5
 		beq.s	.skipxflip
 		ori.w	#$800,d3	; set X-flip bit
 ; loc_1826:
 .skipxflip:
 		move.w	d5,d1
-		move.w	d6,d7
+		move.b	d6,d7
 		sub.w	a5,d7		; subtract length in bits of inline copy value
 		bcc.s	.enoughbits	; branch if a new word doesn't need to be read
-		move.w	d7,d6
-		addi.w	#16,d6
+		move.b	d7,d6
+		addi.b	#16,d6
 		neg.w	d7		; calculate bit deficit
 		lsl.w	d7,d1		; and make space for that many bits
 		move.b	(a0),d5		; get next byte
@@ -206,11 +208,8 @@ EniDec_FetchInlineValue:
 		add.w	d0,d0
 		and.w	EniDec_Masks-2(pc,d0.w),d1	; mask value appropriately
 		add.w	d3,d1		; add starting art tile
-		move.b	(a0)+,d5
-;		lsl.w	#8,d5
-		move.b	d5,-(sp)	; (save 2 cycles, waste 4 bytes)
+		move.b	(a0)+,-(sp)
 		move.w	(sp)+,d5
-		clr.b	d5
 		move.b	(a0)+,d5	; get next word
 		rts
 ; ===========================================================================
@@ -241,12 +240,15 @@ EniDec_Masks:
 
 ; sub_188C:
 EniDec_FetchByte:
-		sub.w	d0,d6	; subtract length of current entry from shift value so that next entry is read next time around
-		cmpi.w	#9,d6	; does a new byte need to be read?
+		sub.b	d0,d6	; subtract length of current entry from shift value so that next entry is read next time around
+		cmpi.b	#9,d6	; does a new byte need to be read?
 		bhs.s	.locret	; if not, branch
-		addq.w	#8,d6
-		asl.w	#8,d5
+		addq.b	#8,d6
+;		asl.w	#8,d5
+		move.b	d5,-(sp)
+		move.w	(sp)+,d5
+		clr.b	d5
 		move.b	(a0)+,d5
 .locret:
-		rts	
+		rts
 ; End of function EniDec_FetchByte

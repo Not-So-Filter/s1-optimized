@@ -38,15 +38,9 @@ psgdelta	EQU 12
 ; nMaxPSG1 and nMaxPSG2 are used only for songs from S3/S&K/S3D drivers.
 ; The use of psgdelta is intended to undo the effects of PSGPitchConvert
 ; and ensure that the ending note is indeed the maximum PSG frequency.
-;	if SonicDriverVer<=2
-;nMaxPSG				EQU nA5
-;nMaxPSG1			EQU nA5+psgdelta
-;nMaxPSG2			EQU nA5+psgdelta
-;	else
 nMaxPSG				EQU nBb6-psgdelta
 nMaxPSG1			EQU nBb6
 nMaxPSG2			EQU nB6
-;	endif
 ; ---------------------------------------------------------------------------
 ; PSG volume envelope equates
 	switch SonicDriverVer
@@ -176,17 +170,27 @@ s1TempotoS3 function n,s2TempotoS3(s1TempotoS2(n))
 s3TempotoS1 function n,s2TempotoS1(s2TempotoS3(n))
 s3TempotoS2 function n,s2TempotoS3(n)
 
+s2TempotoS3_Z80 function n,(100h-((n==0)|n))&0FFh
+s1TempotoS2_Z80 function n,((((conv0To256(n)-1)<<8)+(conv0To256(n)>>1))/conv0To256(n))&0FFh
+s1TempotoS3_Z80 function n,s2TempotoS3_Z80(s1TempotoS2_Z80(n))
+
 convertMainTempoMod macro mod
 		dc.b	s1TempotoS3(mod)
 	endm
 
 ; PSG conversion to S3/S&K/S3D drivers require a tone shift of 12 semi-tones.
 PSGPitchConvert macro pitch
+;	if (SonicDriverVer>=3)&&(SourceDriver<3)
 		dc.b	(pitch+psgdelta)&$FF
+;	elseif (SonicDriverVer<3)&&(SourceDriver>=3)
+;		dc.b	(pitch-psgdelta)&$FF
+;	else
+;		dc.b	pitch
+;	endif
 	endm
 
 CheckedChannelPointer macro loc
-	if SonicDriverVer<>1
+	if SoundDriverType<>1
 		dc.w	z80_ptr(loc)
 	else
 		if MOMPASS>1
@@ -232,7 +236,7 @@ smpsHeaderVoice macro loc
 	if songStart<>*
 		fatal "Missing smpsHeaderStartSong"
 	endif
-	if SonicDriverVer<>1
+	if SoundDriverType<>1
 		dc.w	z80_ptr(loc)
 	else
 		if MOMPASS>1
@@ -296,10 +300,20 @@ smpsHeaderFM macro loc,pitch,vol
 smpsHeaderPSG macro loc,pitch,vol,mod,voice
 	CheckedChannelPointer loc
 	PSGPitchConvert pitch
-	; Volume envelope
 	dc.b	vol
-	; Modulation envelope
-	dc.b	mod
+	; Frequency envelope
+	if (SonicDriverVer>=3) && (SourceDriver<3)
+		; In SMPS 68k Type 1, this byte is skipped and can contain garbage.
+		; Sonic 2's Oil Ocean Zone and Ending themes set this byte to a non-zero value which
+		; other drivers may try to process as valid data, so manually force it to 0 here.
+		dc.b	0
+	else
+		if (MOMPASS==2) && (SonicDriverVer<3) && (SourceDriver>=3) && (mod<>0)
+			message "This track header specifies a frequency envelope, but this driver does not support them."			
+		endif
+		dc.b	mod
+	endif
+	; Volume envelope
 	dc.b	voice
 	endm
 
@@ -356,14 +370,14 @@ smpsNop macro val
 
 ; Return (used after smpsCall)
 smpsReturn macro val
-	if SonicDriverVer>=3
+	if SoundDriverType>=3
 		dc.b	$F9
 	else
-		dc.b	$E2
+		dc.b	$E3
 	endif
 	endm
 
-; E3xx - Fade in previous song (ie. 1-Up)
+; Fade in previous song (ie. 1-Up)
 smpsFade macro val
 	if SonicDriverVer>=3
 		dc.b	$E2
@@ -378,11 +392,11 @@ smpsFade macro val
 	elseif (SourceDriver>=3) && ("val"<>"") && ("val"<>"$FF")
 		; This is one of those weird S3+ "fades" that we don't need
 	else
-		dc.b	$E3
+		dc.b	$E4
 	endif
 	endm
 
-; E4xx - Set channel tempo divider to xx
+; E5xx - Set channel tempo divider to xx
 smpsChanTempoDiv macro val
 	if SonicDriverVer>=5
 		; New flag unique to Flamewing's modified S&K driver
@@ -390,19 +404,19 @@ smpsChanTempoDiv macro val
 	elseif SonicDriverVer==3
 		fatal "Coord. Flag to set tempo divider of a single channel does not exist in S3 driver. Use Flamewing's modified S&K sound driver instead."
 	else
-		dc.b	$E4,val
+		dc.b	$E5,val
 	endif
 	endm
 
-; E5xx - Alter Volume by xx
+; E6xx - Alter Volume by xx
 smpsAlterVol macro val
-	dc.b	$E5,val
+	dc.b	$E6,val
 	endm
 
-; E6 - Prevent attack of next note
-smpsNoAttack	EQU $E6
+; E7 - Prevent attack of next note
+smpsNoAttack	EQU $E7
 
-; E7xx - Set note fill to xx
+; E8xx - Set note fill to xx
 smpsNoteFill macro val
 	if (SonicDriverVer>=5)&&(SourceDriver<3)
 		; Unique to Flamewing's modified driver
@@ -413,7 +427,7 @@ smpsNoteFill macro val
 		elseif (SonicDriverVer<3)&&(SourceDriver>=3)
 			message "Note fill will not work as intended unless you multiply the fill value by the tempo divider or complain to Flamewing to add an appropriate coordination flag for it."
 		endif
-		dc.b	$E7,val
+		dc.b	$E8,val
 	endif
 	endm
 
@@ -422,7 +436,7 @@ smpsChangeTransposition macro val
 	if SonicDriverVer>=3
 		dc.b	$FB,val
 	else
-		dc.b	$E8,val
+		dc.b	$E9,val
 	endif
 	endm
 
@@ -431,7 +445,7 @@ smpsSetTempoMod macro mod
 	if SonicDriverVer>=3
 		dc.b	$FF,$00
 	else
-		dc.b	$E9
+		dc.b	$EA
 	endif
 	convertMainTempoMod mod
 	endm
@@ -441,7 +455,7 @@ smpsSetTempoDiv macro val
 	if SonicDriverVer>=3
 		dc.b	$FF,$04,val
 	else
-		dc.b	$EA,val
+		dc.b	$EB,val
 	endif
 	endm
 
@@ -456,13 +470,13 @@ smpsSetVol macro val
 
 ; Works on all drivers
 smpsPSGAlterVol macro vol
-	dc.b	$EB,vol
+	dc.b	$EC,vol
 	endm
 
 ; Clears pushing sound flag in S1
 smpsClearPush macro
 	if SonicDriverVer==1
-		dc.b	$EC
+		dc.b	$ED
 	else
 		fatal "Coord. Flag to clear S1 push block flag does not exist in S2 or S3 drivers. Complain to Flamewing to add it."
 	endif
@@ -471,7 +485,7 @@ smpsClearPush macro
 ; Stops special SFX (S1 only) and restarts overridden music track
 smpsStopSpecial macro
 	if SonicDriverVer==1
-		dc.b	$ED
+		dc.b	$EE
 	else
 		message "Coord. Flag to stop special SFX does not exist in S2 or S3 drivers. Complain to Flamewing to add it. With adequate caution, smpsStop can do this job."
 		smpsStop
@@ -483,13 +497,13 @@ smpsFMvoice macro voice,songID
 	if (SonicDriverVer>=3)&&("songID"<>"")
 		dc.b	$EF,voice|$80,songID+$81
 	else
-		dc.b	$EE,voice
+		dc.b	$EF,voice
 	endif
 	endm
 
-; EFwwxxyyzz - Modulation - ww: wait time - xx: modulation speed - yy: change per step - zz: number of steps
+; F0wwxxyyzz - Modulation - ww: wait time - xx: modulation speed - yy: change per step - zz: number of steps
 smpsModSet macro wait,speed,change,step
-	dc.b	$EF
+	dc.b	$F0
 	if (SonicDriverVer>=3)&&(SourceDriver<3)
 		dc.b	wait+1,speed,change,((step+1) * speed) & $FF
 	elseif (SonicDriverVer<3)&&(SourceDriver>=3)
@@ -509,18 +523,18 @@ smpsModOn macro type
 			dc.b	$F4,$80
 		endif
 	else
-		dc.b	$F0
+		dc.b	$F1
 	endif
 	endm
 
-; F1 - End of channel
+; F2 - End of channel
 smpsStop macro
-	dc.b	$F1
+	dc.b	$F2
 	endm
 
-; F2xx - PSG waveform to xx
+; F3xx - PSG waveform to xx
 smpsPSGform macro form
-	dc.b	$F2,form
+	dc.b	$F3,form
 	endm
 
 ; Turn off Modulation
@@ -528,40 +542,40 @@ smpsModOff macro
 	if SonicDriverVer>=3
 		dc.b	$FA
 	else
-		dc.b	$F3
+		dc.b	$F4
 	endif
 	endm
 
-; F4xx - PSG voice to xx
+; F5xx - PSG voice to xx
 smpsPSGvoice macro voice
-	dc.b	$F4,voice
+	dc.b	$F5,voice
 	endm
 
-; F5xxxx - Jump to xxxx
+; F6xxxx - Jump to xxxx
 smpsJump macro loc
-	dc.b	$F5
-	if SonicDriverVer<>1
-		dc.w	z80_ptr(loc)
-	else
-		dc.w	loc-*-1
-	endif
-	endm
-
-; F6xxyyzzzz - Loop back to zzzz yy times, xx being the loop index for loop recursion fixing
-smpsLoop macro index,loops,loc
 	dc.b	$F6
-	dc.b	index,loops
-	if SonicDriverVer<>1
+	if SoundDriverType<>1
 		dc.w	z80_ptr(loc)
 	else
 		dc.w	loc-*-1
 	endif
 	endm
 
-; F7xxxx - Call pattern at xxxx, saving return point
-smpsCall macro loc
+; F7xxyyzzzz - Loop back to zzzz yy times, xx being the loop index for loop recursion fixing
+smpsLoop macro index,loops,loc
 	dc.b	$F7
-	if SonicDriverVer<>1
+	dc.b	index,loops
+	if SoundDriverType<>1
+		dc.w	z80_ptr(loc)
+	else
+		dc.w	loc-*-1
+	endif
+	endm
+
+; F8xxxx - Call pattern at xxxx, saving return point
+smpsCall macro loc
+	dc.b	$F8
+	if SoundDriverType<>1
 		dc.w	z80_ptr(loc)
 	else
 		dc.w	loc-*-1
@@ -573,7 +587,7 @@ smpsFMAlterVol macro val1,val2
 	if (SonicDriverVer>=3)&&("val2"<>"")
 		dc.b	$E5,val1,val2
 	else
-		dc.b	$E5,val1
+		dc.b	$E6,val1
 	endif
 	endm
 
@@ -691,7 +705,7 @@ smpsMaxRelRate macro
 		smpsFMICommand $88,$0F
 		smpsFMICommand $8C,$0F
 	else
-		dc.b	$F8
+		dc.b	$F9
 	endif
 	endm
 ; ---------------------------------------------------------------------------
@@ -869,7 +883,7 @@ smpsVcTotalLevel macro op1,op2,op3,op4
 		endif
 	endif
 
-	if SonicDriverVer==2
+	if SoundDriverType==2
 		dc.b	(vcDT4<<4)+vcCF4       ,(vcDT2<<4)+vcCF2       ,(vcDT3<<4)+vcCF3       ,(vcDT1<<4)+vcCF1
 		dc.b	(vcRS4<<6)+vcAR4       ,(vcRS2<<6)+vcAR2       ,(vcRS3<<6)+vcAR3       ,(vcRS1<<6)+vcAR1
 		dc.b	vcAM4|vcD1R4|vcD1R4Unk ,vcAM2|vcD1R2|vcD1R2Unk ,vcAM3|vcD1R3|vcD1R3Unk ,vcAM1|vcD1R1|vcD1R1Unk

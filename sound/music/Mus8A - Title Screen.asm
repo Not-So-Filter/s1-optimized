@@ -91,7 +91,7 @@ Mus8A_Title_Screen_Loop00:
 
 ; DAC Data
 Mus8A_Title_Screen_DAC:
-	dc.b	$0C, dSnare, dSnare, dSnare, dKick, dSnare, dKick, dSnare, dKick, dSnare, dKick
+	dc.b	nRst, $0C, dSnare, dSnare, dSnare, dKick, dSnare, dKick, dSnare, dKick, dSnare, dKick
 	dc.b	dSnare, dKick, dSnare, dKick, dSnare, dKick, dSnare, dKick, $06, nRst, $02, dSnare
 	dc.b	dSnare, dSnare, $09, dSnare, $03, dKick, $0C, dSnare, dKick, dSnare, dKick, $06
 	dc.b	dSnare, $12, dSnare, $0C, dKick

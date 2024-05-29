@@ -7,16 +7,30 @@
 
 PauseGame:
 		tst.b	(v_lives).w	; do you have any lives	left?
-		beq.s	Unpause		; if not, branch
+		beq.w	Unpause		; if not, branch
 		tst.b	(f_pause).w	; is game already paused?
 		bne.s	Pause_StopGame	; if yes, branch
 		btst	#bitStart,(v_jpadpress1).w ; is Start button pressed?
-		beq.s	Pause_DoNothing	; if not, branch
+		beq.w	Pause_DoNothing	; if not, branch
 
 Pause_StopGame:
 		moveq	#1,d0
 		move.b	d0,(f_pause).w	; freeze time
+	if SoundDriverType=4
+		SMPS_Pause
+	endif
+	if SoundDriverType=1
 		move.b	d0,(v_snddriver_ram+f_pausemusic).w ; pause music
+	else
+		stopZ80
+	if SoundDriverType=2
+		move.b	#MusID_Pause,(z80_ram+zAbsVar.StopMusic).l	; Pause the music
+	endif
+	if SoundDriverType=3
+		move.b	d0,(z80_ram+zPauseFlag).l	; Pause the music
+	endif
+		startZ80
+	endif
 
 Pause_Loop:
 		move.b	#id_VB_0C,(v_vbla_routine).w
@@ -40,7 +54,21 @@ Pause_ChkStart:
 		beq.s	Pause_Loop	; if not, branch
 
 Pause_EndMusic:
+	if SoundDriverType=4
+		SMPS_Unpause
+	endif
+	if SoundDriverType=1
 		move.b	#$80,(v_snddriver_ram+f_pausemusic).w	; unpause the music
+	else
+		stopZ80
+	if SoundDriverType=2
+		move.b	#MusID_Unpause,(z80_ram+zAbsVar.StopMusic).l	; Unpause the music
+	endif
+	if SoundDriverType=3
+		move.b	#$80,(z80_ram+zPauseFlag).l	; Unpause the music
+	endif
+		startZ80
+	endif
 
 Unpause:
 		clr.b	(f_pause).w	; unpause the game
@@ -51,6 +79,20 @@ Pause_DoNothing:
 
 Pause_SlowMo:
 		st.b	(f_pause).w
+	if SoundDriverType=4
+		SMPS_Unpause
+	endif
+	if SoundDriverType=1
 		move.b	#$80,(v_snddriver_ram+f_pausemusic).w	; Unpause the music
-		rts	
+	else
+		stopZ80
+	if SoundDriverType=2
+		move.b	#MusID_Unpause,(z80_ram+zAbsVar.StopMusic).l	; Unpause the music
+	endif
+	if SoundDriverType=3
+		move.b	#$80,(z80_ram+zPauseFlag).l	; Unpause the music
+	endif
+		startZ80
+	endif
+		rts
 ; End of function PauseGame

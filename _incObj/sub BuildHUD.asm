@@ -25,7 +25,11 @@ BuildHUD:
 		bne.s	+
 		addq.w	#2,d4	; set mapping frame for double blink
 +
+	if GenesisPlusGXWide=1
+		moveq	#$90-40,d0	; set X pos
+	else
 		move.w	#$90,d0	; set X pos
+	endif
 		move.w	#$108,d1	; set Y pos
 		lea	Map_HUD(pc),a1
 		move.w	#make_art_tile(ArtTile_HUD,0,0),d5	; set art tile and flags

@@ -24,8 +24,13 @@ loc_146A:
 		moveq	#0,d2
 		moveq	#0,d4
 		bsr.w	NemDec_BuildCodeTable
-		move.b	(a0)+,d5	; get first byte of compressed data
-		asl.w	#8,d5	; shift up by a byte
+;		move.b	(a0)+,d5	; get first byte of compressed data
+;		asl.w	#8,d5	; shift up by a byte
+;		move.b	d5,-(sp)
+;		move.w	(sp)+,d5
+;		clr.b	d5
+		move.b	(a0)+,-(sp)	; get first byte of compressed data
+		move.w	(sp)+,d5
 		move.b	(a0)+,d5	; get second byte of compressed data
 		moveq	#$10,d6	; set initial shift value
 ; End of function NemDec
@@ -54,7 +59,10 @@ loc_74978:
 		cmpi.b	#9,d6	; does a new byte need to be read?
 		bhs.s	NemPCD_ProcessCompressedData	; if not, branch
 		addq.b	#8,d6
-		asl.w	#8,d5
+;		asl.w	#8,d5
+		move.b	d5,-(sp)
+		move.w	(sp)+,d5
+		clr.b	d5
 		move.b	(a0)+,d5	; read next byte
 
 NemPCD_ProcessCompressedData:
@@ -86,7 +94,10 @@ NemPCD_InlineData:
 		cmpi.b	#9+6,d6
 		bhs.s	loc_14E4
 		addq.b	#8,d6
-		asl.w	#8,d5
+;		asl.w	#8,d5
+		move.b	d5,-(sp)
+		move.w	(sp)+,d5
+		clr.b	d5
 		move.b	(a0)+,d5
 
 loc_14E4:
